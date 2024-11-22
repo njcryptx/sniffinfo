@@ -55,7 +55,7 @@ def search_google(query, limit):
 def main():
     parser = argparse.ArgumentParser(description="Get domain WHOIS info, IP info, or perform Google search")
     parser.add_argument('-d', '--domain', type=str, help="Domain name to get WHOIS and IP info (e.g., google.com)")
-    parser.add_argument('-s', '--search', type=str, help="Google search query (e.g., Python tutorial)")
+    parser.add_argument('-s', '--search', type=str, help="Google search query")
     parser.add_argument('--limit', type=int, default=10, help="Limit the number of search results (default: 10)")
 
     args = parser.parse_args()
