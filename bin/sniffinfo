@@ -1,0 +1,72 @@
+#!/usr/bin/python3
+
+import argparse
+import myinfo
+from Flickpy import run_animation
+from googlespy import search
+
+COLORS = {
+    'cyan': '\033[96m',
+    'yellow': '\033[93m',
+    'green': '\033[92m',
+    'red': '\033[91m',
+    'blue': '\033[94m',
+    'magenta': '\033[95m',
+    'reset': '\033[0m'
+}
+
+def colorize(text, color):
+    return f"{COLORS.get(color, COLORS['reset'])}{text}{COLORS['reset']}"
+
+def get_whois_info_for_domain(domain):
+    whois_info = myinfo.get_whois_info(domain)
+
+    if 'error' not in whois_info:
+        formatted_whois = myinfo.format_whois_info(whois_info)
+
+        print(colorize(f"Domain Name : {formatted_whois['domain_name']}", 'cyan'))
+        print(colorize(f"Registrar : {formatted_whois['registrar']}", 'yellow'))
+        print(colorize(f"Creation Date : {formatted_whois['creation_date']}", 'green'))
+        print(colorize(f"Registry Expiry Date : {formatted_whois['registry_expiry_date']}", 'red'))
+        print(colorize(f"Name Servers : {formatted_whois['name_servers']}", 'blue'))
+
+        ip_address = myinfo.resolve_domain_to_ip(domain)
+        if isinstance(ip_address, dict) and 'error' in ip_address:
+            print(colorize(ip_address['error'], 'red'))
+        else:
+            ip_info = myinfo.get_ip_geolocation(ip_address)
+            if 'error' not in ip_info:
+                formatted_ip_info = myinfo.format_ip_info(ip_address, ip_info)
+                print(colorize(f"IP Address : {formatted_ip_info['ip_address']}", 'magenta'))
+                print(colorize(f"City : {formatted_ip_info['city']}", 'green'))
+                print(colorize(f"Country : {formatted_ip_info['country']}", 'yellow'))
+                print(colorize(f"Organization : {formatted_ip_info['organization']}", 'cyan'))
+            else:
+                print(colorize(ip_info['error'], 'red'))
+    else:
+        print(colorize(whois_info['error'], 'red'))
+
+def search_google(query, limit):
+    results = search(query=query, limit=limit)
+    print(colorize(f"\nShowing top {limit} search results for : {query}", 'cyan'))
+    for link in results:
+        print(colorize(f"Result: {link}", 'blue'))
+
+def main():
+    parser = argparse.ArgumentParser(description="Get domain WHOIS info, IP info, or perform Google search")
+    parser.add_argument('-d', '--domain', type=str, help="Domain name to get WHOIS and IP info (e.g., google.com)")
+    parser.add_argument('-s', '--search', type=str, help="Google search query (e.g., Python tutorial)")
+    parser.add_argument('--limit', type=int, default=10, help="Limit the number of search results (default: 10)")
+
+    args = parser.parse_args()
+    
+    if args.domain:
+        print(colorize(f"\nFetching WHOIS information for : {args.domain}", 'cyan'))
+        get_whois_info_for_domain(args.domain)
+    
+    if args.search:
+        print(colorize(f"\nPerforming Google search for : {args.search}", 'cyan'))
+        search_google(args.search, args.limit)
+
+if __name__ == "__main__":
+    main()
